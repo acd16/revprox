@@ -20,9 +20,13 @@ int proRevXmitData (int servfd, int clifd) {
 	int len;
 	while(1) {
 			len = recv(clifd, buf, sizeof(buf), 0);
+			cout << "sec received " << len<<endl;
 			if (len < 0)
 					error("recv error\n");
-			if (send(servfd, buf, len, 0) < 0)
+			cout << "sec received " << len<<endl;
+			len = send(servfd, buf, len, 0);
+			cout << "sec sent" << len<<endl;
+			if (len < 0)
 					error("send error\n");
 	}
 	return 0;
@@ -47,7 +51,9 @@ int proXmitData(int fd) {
 		cout << "received " << len<<endl;
 		if (len < 0)
 			error("recv error\n");
-		if (send(clientfd, buf, len, 0) < 0)
+		len = send(clientfd, buf, len, 0);
+		cout << "sent " << len<<endl;
+		if (len < 0)
 			error("send error\n");
 	}
 	return 0;

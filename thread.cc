@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 using namespace std;
 
@@ -18,6 +19,10 @@ void check(int i){
 int main() {
 	thread test(check, 1);
 	thread test1 (check, 1);
+	while(1){
+		cout<<"in loop\n"<<endl;
+		this_thread::sleep_for(chrono::seconds(2));
+	}
 	test.join();
 	test1.join();
 }

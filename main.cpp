@@ -18,11 +18,14 @@ using namespace std;
 int proRevXmitData (int servfd, int clifd) {
 	char buf[2048] = {0};
 	int len;
-	len = recv(clifd, buf, sizeof(buf), 0);
-	if (len < 0)
-		error("recv error\n");
-	if (send(servfd, buf, len, 0) < 0)
-		error("send error\n");
+	while(1) {
+			len = recv(clifd, buf, sizeof(buf), 0);
+			if (len < 0)
+					error("recv error\n");
+			if (send(servfd, buf, len, 0) < 0)
+					error("send error\n");
+	}
+	return 0;
 }
 
 int proXmitData(int fd) {
@@ -33,18 +36,21 @@ int proXmitData(int fd) {
 	string clientIp = "127.0.0.1";
 	clientfd = socket(AF_INET, SOCK_STREAM, 0);
 	client_sockaddr.sin_family = AF_INET;
-	client_sockaddr.sin_port = htons(8080);
+	client_sockaddr.sin_port = htons(80);
 	client_sockaddr.sin_addr.s_addr = inet_addr(clientIp.c_str());
 	if (connect (clientfd, (struct sockaddr *) &client_sockaddr,
 						sizeof(client_sockaddr)) < 0)
 		error("connect failure\n");
-	//thread proRevProcessThread (proRevXmitData, fd, clientfd);
-	len = recv(fd, buf, sizeof(buf), 0);
-	cout << "received " << len<<endl;
-	if (len < 0)
-		error("recv error\n");
-	if (send(clientfd, buf, len, 0) < 0)
-		error("send error\n");
+	thread proRevProcessThread (proRevXmitData, fd, clientfd);
+	while(1){
+		len = recv(fd, buf, sizeof(buf), 0);
+		cout << "received " << len<<endl;
+		if (len < 0)
+			error("recv error\n");
+		if (send(clientfd, buf, len, 0) < 0)
+			error("send error\n");
+	}
+	return 0;
 }
 
 int main() {
@@ -73,6 +79,8 @@ int main() {
 		 * communication happens over it 
 		 */
 		//Weird error
-		//thread proProcessThread (proXmitData, serverfd);
+		thread proProcessThread (proXmitData, serverfd);
+		proProcessThread.join();
 	}
+	return 0;
 }

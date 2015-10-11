@@ -24,7 +24,7 @@ int proRevXmitData (int proxfd, int serverfd) {
 			if (len == 0)
 				/* peer requested for shutdown */
 				return 0;
-			if (len < 0)
+			else if (len < 0)
 					error("recv error\n");
 			cout << "sec received " << len<<endl;
 			len = send(proxfd, buf, len, 0);
@@ -52,14 +52,17 @@ int proXmitData(int proxyfd) {
 	while(1){
 		len = recv(proxyfd, buf, sizeof(buf), 0);
 		cout << "received " << len<<endl;
-		if (len < 0)
+		if (len == 0) {
+			proRevProcessThread.join();
+			return 0;
+		}
+		else if (len < 0)
 			error("recv error\n");
 		len = send(serverfd, buf, len, 0);
 		cout << "sent " << len<<endl;
 		if (len < 0)
 			error("send error\n");
 	}
-	proRevProcessThread.join();
 	return 0;
 }
 

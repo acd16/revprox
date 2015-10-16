@@ -13,7 +13,7 @@ int Proxy::proXmitData() {
 	if (connect (serverfd, (struct sockaddr *) &client_sockaddr,
 						sizeof(client_sockaddr)) < 0)
 		error("connect failure\n");
-	thread proRevProcessThread (&Proxy::proRevXmitData);
+	thread proRevProcessThread (&Proxy::proRevXmitData, this);
 	while(1){
 		len = recv(proxyfd, buf, sizeof(buf), 0);
 		cout << "DBG received " << len<<endl;
@@ -75,7 +75,7 @@ int Proxy::runProxy(int sockfd) {
 		proxyfd = accept(sockfd, (struct sockaddr *) &server_sockaddr, 
 						&serlen);
 		cout << "DBG crossed 1"<<endl;
-		thread proProcessThread (&Proxy::proXmitData);
+		thread proProcessThread (&Proxy::proXmitData, this);
 		proProcessThread.join();
 	}
 	return 0;
@@ -85,4 +85,7 @@ Proxy::~Proxy(){
 		close(serverfd);
 		close(proxyfd);
 		close(sockfd);
+}
+
+Proxy::Proxy(){
 }

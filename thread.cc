@@ -8,17 +8,23 @@ using namespace std;
 
 mutex mtx;
 
-void check(int i){
+class Thread {
+		public : 
+				void check(char);
+};
+
+void Thread::check(char i){
 	for(int j=0;j<100;j++) {
 			mtx.lock();
-			cout<<"i "<<j<<"\t";
+			cout<<i << " "<<j<<"\t";
 			mtx.unlock();
 	}
 }
 
 int main() {
-	thread test(check, 1);
-	thread test1 (check, 1);
+	Thread * chek = new Thread();
+	thread test(&Thread::check, chek, 'a');
+	thread test1 (&Thread::check, chek, 'b');
 	while(1){
 		cout<<"in loop\n"<<endl;
 		this_thread::sleep_for(chrono::seconds(2));

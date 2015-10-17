@@ -1,7 +1,6 @@
 #include "proxy.hpp"
 
 int Proxy::proXmitData() {
-	int serverfd;
 	char buf[2048] = {0};
 	int len;
 	struct sockaddr_in client_sockaddr = {0};
@@ -13,12 +12,10 @@ int Proxy::proXmitData() {
 	if (connect (serverfd, (struct sockaddr *) &client_sockaddr,
 						sizeof(client_sockaddr)) < 0)
 		error("connect failure\n");
-	thread proRevProcessThread (&Proxy::proRevXmitData, this);
 	while(1){
 		len = recv(proxyfd, buf, sizeof(buf), 0);
 		cout << "DBG received " << len<<endl;
 		if (len == 0) {
-			proRevProcessThread.join();
 			return 0;
 		}
 		else if (len < 0)
@@ -76,7 +73,9 @@ int Proxy::runProxy(int sockfd) {
 						&serlen);
 		cout << "DBG crossed 1"<<endl;
 		thread proProcessThread (&Proxy::proXmitData, this);
+		thread proRevProcessThread (&Proxy::proRevXmitData, this);
 		proProcessThread.join();
+		proRevProcessThread.join();
 	}
 	return 0;
 }

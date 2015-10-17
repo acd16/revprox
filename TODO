@@ -1,3 +1,8 @@
 --> First response works fine, second one infinite loop. --Done(connection close code added)
 --> OOPsify the code. --Done
 --> Thread management.
+--> Configuration system.
+--> Stress test.
+--> OOPsifid epoll.
+--> Health check.
+--> dpdk'd

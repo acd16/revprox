@@ -1,8 +1,9 @@
 #include "proxy.hpp"
 
-int Proxy::proXmitData() {
+int Proxy::proXmitData(int proxyfd) {
 	char buf[2048] = {0};
-	int len;
+	char buf1[2048] = {0};
+	int len, serverfd = -1;
 	struct sockaddr_in client_sockaddr = {0};
 	string clientIp = "127.0.0.1";
 	serverfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -24,29 +25,29 @@ int Proxy::proXmitData() {
 		cout << "DBG sent " << len<<endl;
 		if (len < 0)
 			error("send error\n");
+		len = recv(serverfd, buf1, sizeof(buf), 0);
+		cout << "DBG sec received " << len<<endl;
+		if (len == 0)
+			/* peer requested for shutdown */
+			return 0;
+		else if (len < 0)
+				error("recv error\n");
+		cout << "DBG sec received " << len<<endl;
+		len = send(proxyfd, buf1, len, 0);
+		cout << "DBG sec sent" << len<<endl;
+		if (len < 0)
+				error("send error\n");
 	}
 	return 0;
 }
 
-int Proxy::proRevXmitData () {
+/*int Proxy::proRevXmitData () {
 	char buf[2048] = {0};
 	int len;
 	while(1) {
-			len = recv(serverfd, buf, sizeof(buf), 0);
-			cout << "DBG sec received " << len<<endl;
-			if (len == 0)
-				/* peer requested for shutdown */
-				return 0;
-			else if (len < 0)
-					error("recv error\n");
-			cout << "DBG sec received " << len<<endl;
-			len = send(proxyfd, buf, len, 0);
-			cout << "DBG sec sent" << len<<endl;
-			if (len < 0)
-					error("send error\n");
 	}
 	return 0;
-}
+}*/
 
 int Proxy::proxySetup() {
 	int optval = 1;
@@ -67,22 +68,24 @@ int Proxy::proxySetup() {
 
 int Proxy::runProxy(int sockfd) {
 	socklen_t serlen;
+	int proxyfd;
 	struct sockaddr_in server_sockaddr = {0};
 	while(1){
 		proxyfd = accept(sockfd, (struct sockaddr *) &server_sockaddr, 
 						&serlen);
 		cout << "DBG crossed 1"<<endl;
-		thread proProcessThread (&Proxy::proXmitData, this);
-		thread proRevProcessThread (&Proxy::proRevXmitData, this);
-		proProcessThread.join();
-		proRevProcessThread.join();
+		//thread proProcessThread (&Proxy::proXmitData, this, proxyfd);
+		proXmitData(proxyfd);
+		//thread proRevProcessThread (&Proxy::proRevXmitData, this);
+		//proProcessThread.join();
+		//proRevProcessThread.join();
 	}
 	return 0;
 }
 
 Proxy::~Proxy(){
-		close(serverfd);
-		close(proxyfd);
+		//close(serverfd);
+		//close(proxyfd);
 		close(sockfd);
 }
 
